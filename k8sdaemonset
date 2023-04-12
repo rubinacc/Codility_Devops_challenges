@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: node-exporter
+  labels:
+    app: exporter
+    role: monitoring
+spec:
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      app: exporter
+      role: monitoring
+  template:
+    metadata:
+      labels:
+        app: exporter
+        role: monitoring
+    spec:
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        operator: Exists
+        effect: NoSchedule
+      containers:
+      - name: node-exporter
+        image: alpine:latest
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+          limits:
+            cpu: 200m
+            memory: 120Mi
+        env:
+        - name: MY_INT_VARIABLE
+          value: "5"
+        - name: MY_STRING_VARIABLE
+          value: "Hello"
+        - name: MY_BOOLEAN_VARIABLE
+          value: "true"
+        ports:
+        - containerPort: 3000
+        livenessProbe:
+          httpGet:
+            path: /api/healthy
+            port: 3000
+          initialDelaySeconds: 10
+          timeoutSeconds: 5
+          periodSeconds: 15
+          failureThreshold: 6
+        readinessProbe:
+          httpGet:
+            path: /api/ready
+            port: 3000
+          initialDelaySeconds: 20
+          timeoutSeconds: 15
+          periodSeconds: 30
+          failureThreshold: 3
