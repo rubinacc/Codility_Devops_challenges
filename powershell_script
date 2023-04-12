@@ -1,0 +1,17 @@
+param(
+[string]$path,
+[DateTime]$dateTime
+)
+
+if (!(Test-Path $path -PathType Container)) {
+"Directory does not exist!" > Report.txt
+exit
+}
+
+$files = Get-ChildItem $path | Where-Object {! $.PSIsContainer -and $.LastWriteTime -gt $dateTime} | Sort-Object -Descending Name
+if ($files.Count -eq 0) {
+"" > Report.txt
+exit
+}
+
+$files | ForEach-Object {$_.Name} > Report.txt
